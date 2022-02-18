@@ -2437,6 +2437,7 @@ table_changed:
 	if ((key0 == (prefix & (KEYC_MASK_KEY|KEYC_MASK_MODIFIERS)) ||
 	    key0 == (prefix2 & (KEYC_MASK_KEY|KEYC_MASK_MODIFIERS))) &&
 	    strcmp(table->name, "prefix") != 0) {
+		status_message_clear(c);
 		server_client_set_key_table(c, "prefix");
 		server_status_client(c);
 		goto out;
@@ -2616,11 +2617,6 @@ server_client_handle_key(struct client *c, struct key_event *event)
 	 * immediately rather than queued.
 	 */
 	if (~c->flags & CLIENT_READONLY) {
-		if (c->message_string != NULL) {
-			if (c->message_ignore_keys)
-				return (0);
-			status_message_clear(c);
-		}
 		if (c->overlay_key != NULL) {
 			switch (c->overlay_key(c, c->overlay_data, event)) {
 			case 0:

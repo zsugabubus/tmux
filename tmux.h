@@ -2030,7 +2030,6 @@ struct client {
 	uint64_t		 redraw_panes;
 	uint64_t		 redraw_scrollbars;
 
-	int			 message_ignore_keys;
 	int			 message_ignore_styles;
 	char			*message_string;
 	struct event		 message_timer;
