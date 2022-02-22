@@ -29,11 +29,14 @@ static int	alerts_enabled(struct window *, int);
 static void	alerts_callback(int, short, void *);
 static void	alerts_reset(struct window *);
 
-static int	alerts_action_applies(struct winlink *, const char *);
+static int	alerts_action_applies(const struct winlink *,
+		    const struct client *, const char *);
 static int	alerts_check_all(struct window *);
 static int	alerts_check_bell(struct window *);
 static int	alerts_check_activity(struct window *);
 static int	alerts_check_silence(struct window *);
+static int	alerts_check_window(struct window *, int, int, int,
+		    const char *, const char *);
 static void	alerts_set_message(struct winlink *, const char *,
 		    const char *);
 
@@ -68,7 +71,8 @@ alerts_callback(__unused int fd, __unused short events, __unused void *arg)
 }
 
 static int
-alerts_action_applies(struct winlink *wl, const char *name)
+alerts_action_applies(const struct winlink *wl, const struct client *c,
+    const char *name)
 {
 	int	action;
 
@@ -79,12 +83,17 @@ alerts_action_applies(struct winlink *wl, const char *name)
 	 */
 
 	action = options_get_number(wl->session->options, name);
-	if (action == ALERT_ANY)
-		return (1);
-	if (action == ALERT_CURRENT)
-		return (wl == wl->session->curw);
-	if (action == ALERT_OTHER)
-		return (wl != wl->session->curw);
+	if (wl->session == c->session) {
+		if (action == ALERT_ANY || action == ALERT_SERVER_ANY)
+			return (1);
+		if (action == ALERT_CURRENT)
+			return (wl == wl->session->curw);
+		if (action == ALERT_OTHER || action == ALERT_SERVER_OTHER)
+			return (wl != wl->session->curw);
+	} else {
+		if (action == ALERT_SERVER_ANY || action == ALERT_SERVER_OTHER)
+			return (1);
+	}
 	return (0);
 }
 
@@ -182,132 +191,88 @@ alerts_queue(struct window *w, int flags)
 static int
 alerts_check_bell(struct window *w)
 {
-	struct winlink	*wl;
-	struct session	*s;
-
-	if (~w->flags & WINDOW_BELL)
-		return (0);
-	if (!options_get_number(w->options, "monitor-bell"))
-		return (0);
-
-	TAILQ_FOREACH(wl, &w->winlinks, wentry)
-		wl->session->flags &= ~SESSION_ALERTED;
-
-	TAILQ_FOREACH(wl, &w->winlinks, wentry) {
-		/*
-		 * Bells are allowed even if there is an existing bell (so do
-		 * not check WINLINK_BELL).
-		 */
-		s = wl->session;
-		if (s->curw != wl || s->attached == 0) {
-			wl->flags |= WINLINK_BELL;
-			server_status_session(s);
-		}
-		if (!alerts_action_applies(wl, "bell-action"))
-			continue;
-		notify_winlink("alert-bell", wl);
-
-		if (s->flags & SESSION_ALERTED)
-			continue;
-		s->flags |= SESSION_ALERTED;
-
-		alerts_set_message(wl, "Bell", "visual-bell");
-	}
-
-	return (WINDOW_BELL);
+	return alerts_check_window(w, WINDOW_BELL, WINLINK_BELL, 1,
+	    "Bell", "bell");
 }
 
 static int
 alerts_check_activity(struct window *w)
 {
-	struct winlink	*wl;
-	struct session	*s;
-
-	if (~w->flags & WINDOW_ACTIVITY)
-		return (0);
-	if (!options_get_number(w->options, "monitor-activity"))
-		return (0);
-
-	TAILQ_FOREACH(wl, &w->winlinks, wentry)
-		wl->session->flags &= ~SESSION_ALERTED;
-
-	TAILQ_FOREACH(wl, &w->winlinks, wentry) {
-		if (wl->flags & WINLINK_ACTIVITY)
-			continue;
-		s = wl->session;
-		if (s->curw != wl || s->attached == 0) {
-			wl->flags |= WINLINK_ACTIVITY;
-			server_status_session(s);
-		}
-		if (!alerts_action_applies(wl, "activity-action"))
-			continue;
-		notify_winlink("alert-activity", wl);
-
-		if (s->flags & SESSION_ALERTED)
-			continue;
-		s->flags |= SESSION_ALERTED;
-
-		alerts_set_message(wl, "Activity", "visual-activity");
-	}
-
-	return (WINDOW_ACTIVITY);
+	return alerts_check_window(w, WINDOW_ACTIVITY, WINLINK_ACTIVITY, 0,
+	    "Activity", "activity");
 }
 
 static int
 alerts_check_silence(struct window *w)
 {
+	return alerts_check_window(w, WINDOW_SILENCE, WINLINK_SILENCE, 0,
+	    "Silence", "silence");
+}
+
+static int
+alerts_check_window(struct window *w, int wflag, int wlflag, int delivery_all,
+    const char *type, const char *name)
+{
 	struct winlink	*wl;
 	struct session	*s;
+	char		monitor_name[50];
 
-	if (~w->flags & WINDOW_SILENCE)
+	sprintf(monitor_name, "monitor-%s", name);
+
+	if (~w->flags & wflag)
 		return (0);
-	if (options_get_number(w->options, "monitor-silence") == 0)
+	if (options_get_number(w->options, monitor_name) == 0)
 		return (0);
 
 	TAILQ_FOREACH(wl, &w->winlinks, wentry)
 		wl->session->flags &= ~SESSION_ALERTED;
 
 	TAILQ_FOREACH(wl, &w->winlinks, wentry) {
-		if (wl->flags & WINLINK_SILENCE)
+		if (!delivery_all && (wl->flags & wlflag))
 			continue;
 		s = wl->session;
 		if (s->curw != wl || s->attached == 0) {
-			wl->flags |= WINLINK_SILENCE;
+			wl->flags |= wflag;
 			server_status_session(s);
 		}
-		if (!alerts_action_applies(wl, "silence-action"))
-			continue;
-		notify_winlink("alert-silence", wl);
-
-		if (s->flags & SESSION_ALERTED)
-			continue;
-		s->flags |= SESSION_ALERTED;
-
-		alerts_set_message(wl, "Silence", "visual-silence");
+		alerts_set_message(wl, type, name);
 	}
 
-	return (WINDOW_SILENCE);
+	return (wflag);
 }
 
 static void
-alerts_set_message(struct winlink *wl, const char *type, const char *option)
+alerts_set_message(struct winlink *wl, const char *type, const char *name)
 {
 	struct client	*c;
 	int		 visual;
+	char		 action_name[16];
+	char		 alert_name[16];
+	char		 visual_name[16];
 
 	/*
 	 * We have found an alert (bell, activity or silence), so we need to
-	 * pass it on to the user. For each client attached to this session,
-	 * decide whether a bell, message or both is needed.
+	 * pass it on to the user. For each client, decide whether a bell,
+	 * message or both is needed.
 	 *
 	 * If visual-{bell,activity,silence} is on, then a message is
 	 * substituted for a bell; if it is off, a bell is sent as normal; both
 	 * mean both a bell and message is sent.
 	 */
 
-	visual = options_get_number(wl->session->options, option);
+	sprintf(action_name, "%s-action", name);
+	sprintf(alert_name, "alert-%s", name);
+	sprintf(visual_name, "visual-%s", name);
+
+	visual = options_get_number(wl->session->options, visual_name);
+	TAILQ_FOREACH(c, &clients, entry)
+		if (!alerts_action_applies(wl, c, action_name))
+			return;
+
+	notify_winlink(alert_name, wl);
+
 	TAILQ_FOREACH(c, &clients, entry) {
-		if (c->session != wl->session || c->flags & CLIENT_CONTROL)
+		if (c->session == NULL || (c->flags & CLIENT_CONTROL))
 			continue;
 
 		if (visual == VISUAL_OFF || visual == VISUAL_BOTH)
@@ -319,7 +284,7 @@ alerts_set_message(struct winlink *wl, const char *type, const char *option)
 			    "%s in current window", type);
 		} else {
 			status_message_set(c, -1, 1, 0, 0,
-			    "%s in window %d", type, wl->idx);
+			    "%s in %s:%s", type, wl->session->name, wl->window->name);
 		}
 	}
 }

@@ -121,6 +121,8 @@ struct winlink;
 #define ALERT_ANY 1
 #define ALERT_CURRENT 2
 #define ALERT_OTHER 3
+#define ALERT_SERVER_ANY 4
+#define ALERT_SERVER_OTHER 5
 
 /* Visual option values. */
 #define VISUAL_OFF 0

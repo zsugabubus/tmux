@@ -4404,7 +4404,7 @@ This is a feature of some terminals as part of their Unicode 14 support.
 Available session options are:
 .Bl -tag -width Ds
 .It Xo Ic activity-action
-.Op Ic any | none | current | other
+.Op Ic any | none | current | other | server-any | server-other
 .Xc
 Set action on window activity when
 .Ic monitor-activity
@@ -4422,6 +4422,14 @@ being off),
 means only activity in windows other than the current window are ignored and
 .Ic other
 means activity in the current window is ignored but not those in other windows.
+.Ic server-any
+and
+.Ic server-other
+are just like
+.Ic any
+and
+.Ic other ,
+respectively, but activity from other sessions are also considered.
 .It Ic assume-paste-time Ar milliseconds
 If keys are entered faster than one in
 .Ar milliseconds ,
@@ -4434,7 +4442,7 @@ Set the base index from which an unused index should be searched when a new
 window is created.
 The default is zero.
 .It Xo Ic bell-action
-.Op Ic any | none | current | other
+.Op Ic any | none | current | other | server-any | server-other
 .Xc
 Set action on a bell in a window when
 .Ic monitor-bell
@@ -4700,7 +4708,7 @@ Formats are expanded, see the
 .Sx FORMATS
 section.
 .It Xo Ic silence-action
-.Op Ic any | none | current | other
+.Op Ic any | none | current | other | server-any | server-other
 .Xc
 Set action on window silence when
 .Ic monitor-silence
