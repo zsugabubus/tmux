@@ -54,7 +54,7 @@ static const char *options_table_status_position_list[] = {
 	"top", "bottom", NULL
 };
 static const char *options_table_bell_action_list[] = {
-	"none", "any", "current", "other", NULL
+	"none", "any", "current", "other", "server-any", "server-other", NULL
 };
 static const char *options_table_visual_bell_list[] = {
 	"off", "on", "both", NULL
