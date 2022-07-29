@@ -73,6 +73,11 @@ static const struct menu_item window_tree_menu_items[] = {
 	{ "Kill", 'x', NULL },
 	{ "Kill Tagged", 'X', NULL },
 	{ "", KEYC_NONE, NULL },
+	{ "Break Pane", 'b', NULL },
+	{ "Paste Tagged Before", 'P', NULL },
+	{ "Join Tagged Before", 'J', NULL },
+	{ "Link Tagged Before", 'L', NULL },
+	{ "", KEYC_NONE, NULL },
 	{ "Cancel", 'q', NULL },
 
 	{ NULL, KEYC_NONE, NULL }
@@ -1120,6 +1125,43 @@ window_tree_command_each(void *modedata, void *itemdata, struct client *c,
 	free(name);
 }
 
+static void
+window_tree_move_each(void *modedata, void *itemdata,
+    __unused struct client *c, __unused key_code key)
+{
+	struct window_tree_modedata	*data = modedata;
+	struct mode_tree_data		*mtd = data->data;
+	struct window_tree_itemdata	*sitem = itemdata;
+	struct window_tree_itemdata	*titem = mode_tree_get_current(mtd);
+	struct cmd_find_state		 sfs, tfs;
+	char				*sname, *tname;
+
+	sname = window_tree_get_target(sitem, &sfs);
+	tname = window_tree_get_target(titem, &tfs);
+	if (sname != NULL && tname != NULL) {
+		const char	*template;
+		char		*command;
+
+		if (key == 'L') {
+			template = "link-window -s '%1' -b -d -t '%2'";
+		} else if (titem->type == WINDOW_TREE_WINDOW && key == 'P') {
+			if (sitem->type == WINDOW_TREE_PANE)
+				template = "break-pane -s '%1' -b -d -t '%2'";
+			else
+				template = "move-window -s '%1' -b -d -t '%2'";
+		} else {
+			template = "move-pane -s '%1' -b -d -t '%2'";
+		}
+
+		command = cmd_template_replace(template, tname, 2);
+		mode_tree_run_command(c, &sfs, command, sname);
+
+		free(command);
+	}
+	free(sname);
+	free(tname);
+}
+
 static enum cmd_retval
 window_tree_command_done(__unused struct cmdq_item *item, void *modedata)
 {
@@ -1407,6 +1449,16 @@ again:
 			mode_tree_run_command(c, NULL, data->command, name);
 		finished = 1;
 		free(name);
+		break;
+	case 'b':
+		name = window_tree_get_target(item, &fs);
+		if (name != NULL)
+			mode_tree_run_command(c, NULL, "break-pane -s '%%' -d", name);
+		break;
+	case 'P':
+	case 'J':
+	case 'L':
+		mode_tree_each_tagged(data->data, window_tree_move_each, c, key, 0);
 		break;
 	}
 	if (finished)
