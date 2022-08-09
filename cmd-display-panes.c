@@ -46,6 +46,7 @@ const struct cmd_entry cmd_display_panes_entry = {
 struct cmd_display_panes_data {
 	struct cmdq_item		*item;
 	struct args_command_state	*state;
+	int				modal;
 };
 
 static enum args_parse_type
@@ -239,9 +240,9 @@ cmd_display_panes_key(struct client *c, void *data, struct key_event *event)
 		if (key >= 'a' && key <= 'z')
 			index = 10 + (key - 'a');
 		else
-			return (-1);
+			return (cdata->modal ? 1 : -1);
 	} else
-		return (-1);
+		return (cdata->modal ? 1 : -1);
 
 	wp = window_pane_at_index(w, index);
 	if (wp == NULL)
@@ -295,6 +296,7 @@ cmd_display_panes_exec(struct cmd *self, struct cmdq_item *item)
 		cdata->item = item;
 	cdata->state = args_make_commands_prepare(self, item, 0,
 	    "select-pane -t \"%%%\"", wait, 0);
+	cdata->modal = delay == 0;
 
 	if (args_has(args, 'N')) {
 		server_client_set_overlay(tc, delay, NULL, NULL,
