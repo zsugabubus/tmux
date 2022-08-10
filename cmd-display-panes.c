@@ -49,6 +49,141 @@ struct cmd_display_panes_data {
 	int				modal;
 };
 
+#define _ 0
+static const char ouija_table[26][5][5] = {
+	{ { 1,1,1,1,1 },
+	  { 1,_,_,_,1 },
+	  { 1,1,1,1,1 },
+	  { 1,_,_,_,1 },
+	  { 1,_,_,_,1 } },
+	{ { 1,1,1,1,_ },
+	  { 1,_,_,1,_ },
+	  { 1,1,1,1,1 },
+	  { 1,_,_,_,1 },
+	  { 1,1,1,1,1 } },
+	{ { 1,1,1,1,1 },
+	  { 1,_,_,_,_ },
+	  { 1,_,_,_,_ },
+	  { 1,_,_,_,_ },
+	  { 1,1,1,1,1 } },
+	{ { 1,1,1,1,_ },
+	  { 1,_,_,_,1 },
+	  { 1,_,_,_,1 },
+	  { 1,_,_,_,1 },
+	  { 1,1,1,1,_ } },
+	{ { 1,1,1,1,1 },
+	  { 1,_,_,_,_ },
+	  { 1,1,1,1,_ },
+	  { 1,_,_,_,_ },
+	  { 1,1,1,1,1 } },
+	{ { 1,1,1,1,1 },
+	  { 1,_,_,_,_ },
+	  { 1,1,1,1,_ },
+	  { 1,_,_,_,_ },
+	  { 1,_,_,_,_ } },
+	{ { 1,1,1,1,1 },
+	  { 1,_,_,_,_ },
+	  { 1,_,1,1,1 },
+	  { 1,_,_,_,1 },
+	  { 1,1,1,1,1 } },
+	{ { 1,_,_,_,1 },
+	  { 1,_,_,_,1 },
+	  { 1,1,1,1,1 },
+	  { 1,_,_,_,1 },
+	  { 1,_,_,_,1 } },
+	{ { _,1,1,1,_ },
+	  { _,_,1,_,_ },
+	  { _,_,1,_,_ },
+	  { _,_,1,_,_ },
+	  { _,1,1,1,_ } },
+	{ { _,_,_,_,1 },
+	  { _,_,_,_,1 },
+	  { _,_,_,_,1 },
+	  { 1,_,_,_,1 },
+	  { 1,1,1,1,1 } },
+	{ { 1,_,_,1,_ },
+	  { 1,_,1,_,_ },
+	  { 1,1,_,_,_ },
+	  { 1,_,1,_,_ },
+	  { 1,_,_,1,_ } },
+	{ { 1,_,_,_,_ },
+	  { 1,_,_,_,_ },
+	  { 1,_,_,_,_ },
+	  { 1,_,_,_,_ },
+	  { 1,1,1,1,1 } },
+	{ { 1,_,_,_,1 },
+	  { 1,1,_,1,1 },
+	  { 1,_,1,_,1 },
+	  { 1,_,_,_,1 },
+	  { 1,_,_,_,1 } },
+	{ { 1,_,_,_,1 },
+	  { 1,1,_,_,1 },
+	  { 1,_,1,_,1 },
+	  { 1,_,_,1,1 },
+	  { 1,_,_,_,1 } },
+	{ { _,1,1,1,_ },
+	  { 1,_,_,_,1 },
+	  { 1,_,_,_,1 },
+	  { 1,_,_,_,1 },
+	  { _,1,1,1,_ } },
+	{ { 1,1,1,1,1 },
+	  { 1,_,_,_,1 },
+	  { 1,1,1,1,1 },
+	  { 1,_,_,_,_ },
+	  { 1,_,_,_,_ } },
+	{ { _,1,1,1,_ },
+	  { 1,_,_,_,1 },
+	  { 1,_,1,_,1 },
+	  { 1,_,_,1,1 },
+	  { _,1,1,1,_ } },
+	{ { 1,1,1,1,1 },
+	  { 1,_,_,_,1 },
+	  { 1,1,1,1,1 },
+	  { 1,_,1,_,_ },
+	  { 1,_,_,1,_ } },
+	{ { 1,1,1,1,1 },
+	  { 1,_,_,_,_ },
+	  { 1,1,1,1,1 },
+	  { _,_,_,_,1 },
+	  { 1,1,1,1,1 } },
+	{ { 1,1,1,1,1 },
+	  { _,_,1,_,_ },
+	  { _,_,1,_,_ },
+	  { _,_,1,_,_ },
+	  { _,_,1,_,_ } },
+	{ { 1,_,_,_,1 },
+	  { 1,_,_,_,1 },
+	  { 1,_,_,_,1 },
+	  { 1,_,_,_,1 },
+	  { 1,1,1,1,1 } },
+	{ { 1,_,_,_,1 },
+	  { 1,_,_,_,1 },
+	  { 1,_,_,_,1 },
+	  { _,1,_,1,_ },
+	  { _,_,1,_,_ } },
+	{ { 1,_,_,_,1 },
+	  { 1,_,_,_,1 },
+	  { 1,_,_,_,1 },
+	  { 1,_,1,_,1 },
+	  { _,1,_,1,_ } },
+	{ { 1,_,_,_,1 },
+	  { _,1,_,1,_ },
+	  { _,_,1,_,_ },
+	  { _,1,_,1,_ },
+	  { 1,_,_,_,1 } },
+	{ { 1,_,_,_,1 },
+	  { 1,_,_,_,1 },
+	  { _,1,_,1,_ },
+	  { _,_,1,_,_ },
+	  { _,_,1,_,_ } },
+	{ { 1,1,1,1,1 },
+	  { _,_,_,_,1 },
+	  { _,1,1,1,_ },
+	  { 1,_,_,_,_ },
+	  { 1,1,1,1,1 } },
+};
+#undef _
+
 static enum args_parse_type
 cmd_display_panes_args_parse(__unused struct args *args, __unused u_int idx,
     __unused char **cause)
@@ -68,8 +203,8 @@ cmd_display_panes_draw_pane(struct screen_redraw_ctx *ctx,
 	struct grid_cell	 fgc, bgc;
 	u_int			 pane, idx, px, py, i, j, xoff, yoff, sx, sy;
 	int			 colour, active_colour;
-	char			 buf[16], lbuf[16], rbuf[16], *ptr;
-	size_t			 len, llen, rlen;
+	char			 buf[16], rbuf[16], *ptr;
+	size_t			 len, rlen;
 
 	if (wp->xoff + wp->sx <= ctx->ox ||
 	    wp->xoff >= ctx->ox + ctx->sx ||
@@ -121,7 +256,16 @@ cmd_display_panes_draw_pane(struct screen_redraw_ctx *ctx,
 
 	if (window_pane_index(wp, &pane) != 0)
 		fatalx("index not found");
-	len = xsnprintf(buf, sizeof buf, "%u", pane);
+	if (pane >= 26) {
+		buf[0] = 'a' + (pane / 26) % 26 - 1;
+		buf[1] = 'a' + pane % 26;
+		buf[2] = '\0';
+		len = 2;
+	} else {
+		buf[0] = 'a' + pane % 26;
+		buf[1] = '\0';
+		len = 1;
+	}
 
 	if (sx < len)
 		return;
@@ -139,23 +283,11 @@ cmd_display_panes_draw_pane(struct screen_redraw_ctx *ctx,
 	}
 
 	rlen = xsnprintf(rbuf, sizeof rbuf, "%ux%u", wp->sx, wp->sy);
-	if (pane > 9 && pane < 35)
-		llen = xsnprintf(lbuf, sizeof lbuf, "%c", 'a' + (pane - 10));
-	else
-		llen = 0;
 
 	if (sx < len * 6 || sy < 5) {
 		tty_attributes(tty, &fgc, &grid_default_cell, NULL, NULL);
-		if (sx >= len + llen + 1) {
-			len += llen + 1;
-			tty_cursor(tty, xoff + px - len / 2, yoff + py);
-			tty_putn(tty, buf, len,	 len);
-			tty_putn(tty, " ", 1, 1);
-			tty_putn(tty, lbuf, llen, llen);
-		} else {
-			tty_cursor(tty, xoff + px - len / 2, yoff + py);
-			tty_putn(tty, buf, len, len);
-		}
+		tty_cursor(tty, xoff + px - len / 2, yoff + py);
+		tty_putn(tty, buf, len, len);
 		goto out;
 	}
 
@@ -164,14 +296,12 @@ cmd_display_panes_draw_pane(struct screen_redraw_ctx *ctx,
 
 	tty_attributes(tty, &bgc, &grid_default_cell, NULL, NULL);
 	for (ptr = buf; *ptr != '\0'; ptr++) {
-		if (*ptr < '0' || *ptr > '9')
-			continue;
-		idx = *ptr - '0';
+		idx = *ptr - 'a';
 
 		for (j = 0; j < 5; j++) {
 			for (i = px; i < px + 5; i++) {
 				tty_cursor(tty, xoff + i, yoff + py + j);
-				if (window_clock_table[idx][j][i - px])
+				if (ouija_table[idx][j][i - px])
 					tty_putc(tty, ' ');
 			}
 		}
@@ -184,11 +314,6 @@ cmd_display_panes_draw_pane(struct screen_redraw_ctx *ctx,
 	if (rlen != 0 && sx >= rlen) {
 		tty_cursor(tty, xoff + sx - rlen, yoff);
 		tty_putn(tty, rbuf, rlen, rlen);
-	}
-	if (llen != 0) {
-		tty_cursor(tty, xoff + sx / 2 + len * 3 - llen - 1,
-		    yoff + py + 5);
-		tty_putn(tty, lbuf, llen, llen);
 	}
 
 out:
@@ -233,12 +358,10 @@ cmd_display_panes_key(struct client *c, void *data, struct key_event *event)
 	u_int				 index;
 	key_code			 key;
 
-	if (event->key >= '0' && event->key <= '9')
-		index = event->key - '0';
-	else if ((event->key & KEYC_MASK_MODIFIERS) == 0) {
+	if ((event->key & KEYC_MASK_MODIFIERS) == 0) {
 		key = (event->key & KEYC_MASK_KEY);
 		if (key >= 'a' && key <= 'z')
-			index = 10 + (key - 'a');
+			index = key - 'a';
 		else
 			return (cdata->modal ? 1 : -1);
 	} else
