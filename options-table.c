@@ -1518,6 +1518,15 @@ const struct options_table_entry options_table[] = {
 		  "This option is no longer used."
 	},
 
+	{ .name = "tilde-style",
+	  .type = OPTIONS_TABLE_STRING,
+	  .scope = OPTIONS_TABLE_SESSION,
+	  .default_str = "default",
+	  .flags = OPTIONS_TABLE_IS_STYLE,
+	  .separator = ",",
+	  .text = "Style of tilde."
+	},
+
 	/* Hook options. */
 	OPTIONS_TABLE_HOOK("after-bind-key", ""),
 	OPTIONS_TABLE_HOOK("after-capture-pane", ""),

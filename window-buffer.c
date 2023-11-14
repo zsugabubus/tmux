@@ -228,10 +228,15 @@ window_buffer_draw(__unused void *modedata, void *itemdata,
 	char				*buf = NULL;
 	size_t				 psize;
 	u_int				 i, cx = ctx->s->cx, cy = ctx->s->cy;
+	struct grid_cell		 gc;
+	u_char				 eolch = '$', eobch = '~';
 
 	pb = paste_get_name(item->name);
 	if (pb == NULL)
 		return;
+
+	style_apply(&gc, global_s_options, "tilde-style", NULL);
+	gc.flags |= GRID_FLAG_NOPALETTE;
 
 	pdata = end = paste_buffer_data(pb, &psize);
 	for (i = 0; i < sy; i++) {
@@ -241,17 +246,24 @@ window_buffer_draw(__unused void *modedata, void *itemdata,
 		buf = xreallocarray(buf, 4, end - start + 1);
 		utf8_strvis(buf, start, end - start,
 		    VIS_OCTAL|VIS_CSTYLE|VIS_TAB);
+		screen_write_cursormove(ctx, cx, cy + i, 0);
 		if (*buf != '\0') {
-			screen_write_cursormove(ctx, cx, cy + i, 0);
 			screen_write_nputs(ctx, sx, &grid_default_cell, "%s",
 			    buf);
 		}
+		if (ctx->s->cx < cx + sx)
+			screen_write_putc(ctx, &gc, eolch);
 
 		if (end == pdata + psize)
 			break;
 		end++;
 	}
 	free(buf);
+
+	while (++i < sy) {
+		screen_write_cursormove(ctx, cx - 1, cy + i, 0);
+		screen_write_putc(ctx, &gc, eobch);
+	}
 }
 
 static int
